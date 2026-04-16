@@ -7,6 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -215,7 +216,9 @@ public class InvoiceProcessingService {
                 paymentTermsNote
         );
 
-        invoiceRepo.save(invoice);
+        if (saveMainInvoice(invoice, invoiceFileRowId)) {
+            return null;
+        }
         logger.debug(invoice.toString());
         logger.debug("END INVOICE - UBL");
         return invoice.getRow_id();
@@ -1090,7 +1093,9 @@ public class InvoiceProcessingService {
                 invoiceTaxCurrencyCode, invoiceBuyerAccReference, buyerReference, purchaseOrderRef, salesOrderRef,
                 despatchAdviceReference, receivingDocumentReference, tenderLotReference, contractReference, projectReference, paymentTermsNote);
 
-        invoiceRepo.save(myInvoice);
+        if (saveMainInvoice(myInvoice, invoiceFileRowId)) {
+            return;
+        }
         logger.debug(myInvoice.toString());
         Long invoiceId = myInvoice.getRow_id();
         logger.debug("END INVOICE - CII");
@@ -1582,5 +1587,30 @@ public class InvoiceProcessingService {
 
     private Date toDate(javax.xml.datatype.XMLGregorianCalendar value) {
         return value != null ? value.toGregorianCalendar().getTime() : null;
+    }
+
+    private boolean saveMainInvoice(Invoice invoice, Long invoiceFileId) {
+        try {
+            invoiceRepo.save(invoice);
+            return false;
+        } catch (DataIntegrityViolationException e) {
+            if (isDuplicateInvoiceFileIdConstraintViolation(e)) {
+                logger.info("Skipping duplicate main Invoice insert for invoiceFileId={} after unique-constraint race", invoiceFileId);
+                return true;
+            }
+            throw e;
+        }
+    }
+
+    private boolean isDuplicateInvoiceFileIdConstraintViolation(Throwable t) {
+        Throwable current = t;
+        while (current != null) {
+            String message = current.getMessage();
+            if (message != null && message.contains("uk_invoice_invoice_file_id")) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 }
