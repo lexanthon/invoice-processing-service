@@ -17,7 +17,15 @@
 	<properties>
 		<java.version>1.8</java.version>
 	</properties>
-
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.helger</groupId>
+				<artifactId>ph-jaxb</artifactId>
+				<version>9.4.2</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
@@ -49,19 +57,19 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-		    <groupId>com.helger</groupId>
-		    <artifactId>ph-bdve</artifactId>
-		    <version>5.1.1</version>
+			<groupId>com.helger</groupId>
+			<artifactId>ph-bdve</artifactId>
+			<version>5.2.11</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.helger</groupId>
-		    <artifactId>ph-bdve-ubl</artifactId>
-		    <version>5.1.1</version>
+			<groupId>com.helger</groupId>
+			<artifactId>ph-bdve-ubl</artifactId>
+			<version>5.2.11</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.helger</groupId>
-		    <artifactId>ph-bdve-cii</artifactId>
-		    <version>5.1.1</version>
+			<groupId>com.helger</groupId>
+			<artifactId>ph-bdve-cii</artifactId>
+			<version>5.2.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
