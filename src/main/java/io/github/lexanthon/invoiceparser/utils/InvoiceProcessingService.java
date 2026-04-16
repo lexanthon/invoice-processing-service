@@ -151,6 +151,9 @@ public class InvoiceProcessingService {
         InvoiceType ubl = UBL21Reader.invoice().read(xml);
 
         Long invoiceId = persistUblInvoice(ubl, xml, invoiceFileRowId, dateReceived);
+        if (invoiceId == null) {
+            return;
+        }
         persistUblBuyer(ubl, invoiceId);
         Long sellerId = persistUblSeller(ubl, invoiceId);
         persistUblSellerParties(ubl, sellerId);
