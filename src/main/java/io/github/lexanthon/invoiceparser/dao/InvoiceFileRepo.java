@@ -18,13 +18,18 @@ public interface InvoiceFileRepo extends JpaRepository<InvoiceFile,String> {
 
 	@Modifying
 	@Transactional
-	@Query(value = "UPDATE invoice_file SET status = ?2, failure_reason = NULL WHERE id = ?1", nativeQuery = true)
-	int markParsed(long id, int newStatus);
+	@Query(value = "UPDATE invoice_file SET status = ?2 WHERE id = ?1 AND status = ?3", nativeQuery = true)
+	int updateStatusIfCurrent(long id, int newStatus, int expectedStatus);
 
 	@Modifying
 	@Transactional
-	@Query(value = "UPDATE invoice_file SET status = ?2, retries_count = COALESCE(retries_count, 0) + 1, failure_reason = ?3 WHERE id = ?1", nativeQuery = true)
-	int markFailed(long id, int newStatus, String failureReason);
+	@Query(value = "UPDATE invoice_file SET status = ?2, failure_reason = NULL WHERE id = ?1 AND status = ?3", nativeQuery = true)
+	int markParsedIfCurrent(long id, int newStatus, int expectedStatus);
+
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE invoice_file SET status = ?2, retries_count = COALESCE(retries_count, 0) + 1, failure_reason = ?4 WHERE id = ?1 AND status = ?3", nativeQuery = true)
+	int markFailedIfCurrent(long id, int newStatus, int expectedStatus, String failureReason);
 	
 	 @Query(value = "SELECT * FROM invoice_file WHERE ID=?1", nativeQuery = true)
 	InvoiceFile findInvoiceByInvoiceId(long id);

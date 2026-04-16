@@ -18,6 +18,8 @@ public class ParserUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ParserUtils.class);
     private static final int STATUS_PENDING = 1;
+    private static final int STATUS_PROCESSING = 4;
+
     @Autowired
     private InvoiceFileRepo invoiceFileRepo;
 
@@ -32,6 +34,19 @@ public class ParserUtils {
         List<InvoiceFile> invoiceList = invoiceFileRepo.findInvoicesByStatus(STATUS_PENDING);
 
         for (InvoiceFile invoiceFile : invoiceList) {
+            int claimed = invoiceFileRepo.updateStatusIfCurrent(
+                    invoiceFile.getId(),
+                    STATUS_PROCESSING,
+                    STATUS_PENDING);
+            if (claimed != 1) {
+                continue;
+            }
+
+            if (!hasText(invoiceFile.getXml())) {
+                invoiceStatusService.markFailed(invoiceFile.getId(), new IllegalArgumentException("Invoice XML is blank"));
+                continue;
+            }
+
             try {
                 invoiceProcessingService.processInvoice(invoiceFile);
                 invoiceStatusService.markParsed(invoiceFile.getId());
@@ -42,4 +57,7 @@ public class ParserUtils {
         }
     }
 
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
 }
