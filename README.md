@@ -2,6 +2,30 @@
 
 Java / Spring Boot service for scheduled parsing and persistence of invoice data in a database-backed workflow.
 
+## Reliability hardening and edge cases covered
+
+The latest changes make invoice processing safer under retries,
+replays, restarts, and concurrent execution. In practice, the service
+now avoids unsafe reprocessing, handles duplicate main-invoice creation
+safely, and stops downstream child persistence when the parent invoice
+is already effectively present.
+
+- Scheduled processing is protected against weak state transitions,
+  accidental re-entry, and double-processing.
+- Main-invoice creation is idempotent for the same logical input,
+  using `invoiceFileId`.
+- Concurrent or retry-driven duplicate main-invoice inserts are handled
+  safely as benign duplicate cases, not hard failures.
+- After a benign duplicate main-invoice outcome, UBL child persistence
+  does not continue, preventing duplicate or inconsistent child data.
+- Local development reliability was also improved through Helger
+  dependency updates and datasource adjustments.
+
+
+## Known limitation
+
+Stale `PROCESSING` rows are not yet automatically recovered after crash or hard stop.
+
 ## Overview
 
 The application polls source rows from `invoice_file`, claims work before processing, parses supported invoice payloads, persists a main `Invoice` row plus related child records, and finalizes source-row status.
