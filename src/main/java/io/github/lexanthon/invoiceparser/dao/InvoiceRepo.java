@@ -11,5 +11,6 @@ import io.github.lexanthon.invoiceparser.model.Invoice;
 
 @Repository
 public interface InvoiceRepo extends JpaRepository<Invoice,String> {
-	
+
+	boolean existsByInvoiceFileId(Long invoiceFileId);
 }

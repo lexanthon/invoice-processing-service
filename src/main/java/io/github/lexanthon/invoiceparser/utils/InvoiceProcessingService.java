@@ -124,6 +124,11 @@ public class InvoiceProcessingService {
         Date dateReceived = invoiceFile.getDateReceived();
         String invoiceType = invoiceFile.getInvoiceType();
 
+        if (invoiceRepo.existsByInvoiceFileId(invoiceFileRowId)) {
+            logger.info("Skipping invoiceFileId={} because main Invoice already exists", invoiceFileRowId);
+            return;
+        }
+
         if ("UBL".equals(invoiceType)) {
             parseUBL(xml, invoiceFileRowId, dateReceived);
             return;
