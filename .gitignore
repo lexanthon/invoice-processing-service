@@ -1,0 +1,13 @@
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+target/
+logs/
+*.log
+*.class
+.idea/
+.vscode/
+*.iml
+VIOLAXAAXX*
